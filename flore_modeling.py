@@ -38,15 +38,19 @@ def create_forecast_test(model, test_df):
     return forecast, forecast_complete
 
 
-def create_forecast(model, regressors, start, end):
-    future_dates = pd.date_range(start= start, end= end, freq='MS')
+def create_forecast(model, regressors, start, end, fixed_regressors=None, default_value=0):
+    future_dates = pd.date_range(start=start, end=end, freq='MS')
     future_df = pd.DataFrame({'ds': future_dates})
+    
     for regressor in regressors:
-        future_df[regressor] = 0  
+        if fixed_regressors and regressor in fixed_regressors:
+            future_df[regressor] = fixed_regressors[regressor]  # Usa il valore specifico
+        else:
+            future_df[regressor] = default_value  # Usa il valore predefinito
 
     forecast = model.predict(future_df)
     forecast_complete = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper', 'additive_terms', 'extra_regressors_additive'] + regressors]
-    return forecast,forecast_complete
+    return forecast, forecast_complete
 
 def assess_regressor_impact(forecast):
     local_regressor_impact = forecast[['ds', 'additive_terms', 'extra_regressors_additive']]
@@ -99,7 +103,13 @@ if __name__ == "__main__":
     print("Regressor Impact Analysis:")
     print(local_impact)
 
-    forecast, forecast_complete = create_forecast(model, REGRESSORS, "2024-12-31", "2025-12-31")
+    fixed_values = {
+    'INNOVIX_Indication 10_Email': 10,
+    'YREX_Indication 10': 5
+}
+    forecast, forecast_complete = create_forecast(model, REGRESSORS, "2025-12-31", "2027-12-31", 
+    fixed_regressors=fixed_values, 
+    default_value=0)
     print(forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']])
 
     with open('prophet_model.pkl', 'wb') as f:

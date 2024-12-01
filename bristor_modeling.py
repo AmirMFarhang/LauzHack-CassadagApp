@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from prophet import Prophet
 from prophet.diagnostics import cross_validation, performance_metrics
 from prophet.utilities import regressor_coefficients
+import pickle
 
 
 def load_and_prepare_data(filepath, date_col, target_col, regressors):
@@ -41,15 +42,19 @@ def calculate_cross_validation_metrics(model):
     return df_cv, accurancy
 
 
-def create_forecast(model, regressors, start, end):
-    future_dates = pd.date_range(start= start, end= end, freq='MS')
+def create_forecast(model, regressors, start, end, fixed_regressors=None, default_value=0):
+    future_dates = pd.date_range(start=start, end=end, freq='MS')
     future_df = pd.DataFrame({'ds': future_dates})
+    
     for regressor in regressors:
-        future_df[regressor] = 0  # Set to default values
+        if fixed_regressors and regressor in fixed_regressors:
+            future_df[regressor] = fixed_regressors[regressor]  # Usa il valore specifico
+        else:
+            future_df[regressor] = default_value  # Usa il valore predefinito
 
     forecast = model.predict(future_df)
     forecast_complete = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper', 'additive_terms', 'extra_regressors_additive'] + regressors]
-    return forecast,forecast_complete
+    return forecast, forecast_complete
 
 
 def assess_regressor_impact(forecast):
@@ -96,8 +101,14 @@ if __name__ == "__main__":
     # Calculate cross-validation metrics
     df_cv, performance_df = calculate_cross_validation_metrics(model)
 
+    fixed_values = {
+    'BRISTOR_Email': 10,
+    'Competitors_Indication A_Days of Treatment': 5
+    }
     # Create forecast
-    forecast, forecast_complete = create_forecast(model, REGRESSORS, "2024-12-31", "2025-12-31")
+    forecast, forecast_complete = create_forecast(model, REGRESSORS, "2025-12-31", "2027-12-31", 
+    fixed_regressors=fixed_values, 
+    default_value=0)    
     print(forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']])
 
     # Assess regressor impact
@@ -105,3 +116,10 @@ if __name__ == "__main__":
     print(local_impact)
 
    # Maybe also extract the most influential regressor
+
+
+
+    # Supponiamo che il tuo modello Prophet sia `m`
+    with open('prophet_model.pkl', 'wb') as f:
+        pickle.dump(model, f)
+
