@@ -4,15 +4,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1c4b3180-c3eb-4a4e-b19e-354ba3a19e68" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web_app/.dart_tool/chrome-device/Default/BraveWallet/Brave Wallet Storage/LOG" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/.dart_tool/chrome-device/Default/BraveWallet/Brave Wallet Storage/LOG" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web_app/.flutter-plugins-dependencies" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/.flutter-plugins-dependencies" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web_app/build/f872507f30e2ff2523f0f1d19160266e.cache.dill.track.dill" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/build/f872507f30e2ff2523f0f1d19160266e.cache.dill.track.dill" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_logic.dart" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_logic.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_state.dart" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_state.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_view.dart" afterDir="false" />
-    </list>
+    <list default="true" id="1c4b3180-c3eb-4a4e-b19e-354ba3a19e68" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
