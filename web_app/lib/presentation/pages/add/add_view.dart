@@ -243,8 +243,62 @@ class _AddPageState extends State<AddPage> {
           ),
           series: _buildSeries(state),
           tooltipBehavior: TooltipBehavior(
-            enable: true,
-            format: 'point.x : point.y mg',
+              shouldAlwaysShow: false,
+              enable: true,
+              format: 'point.x : point.y mg',
+              builder: (dynamic data, dynamic point, dynamic series,
+                  int pointIndex, int seriesIndex) {
+                return Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  // show the information and explain button
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Month: ${data.date.month}',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            'Year: ${data.date.year}',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            'Sales: ${data.value.toInt()}',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ], ),
+                      // explain button
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: () {
+
+                          model.explain(data.date.month, data.date.year, data.value);
+                          // show the explanation dialog
+                        },
+                        child: const Text('Explain'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+
           ),
           zoomPanBehavior: ZoomPanBehavior(
             enablePanning: true,

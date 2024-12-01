@@ -342,6 +342,22 @@ ${_formatForecastDataForLLM()}
     state.chartData.clear();
     super.onClose();
   }
+
+  void explain(month, year, value) {
+    // get the month and year and value before and after the point
+    var currentIndex = state.chartData.indexWhere((data) => data.value == value);
+    var current = state.chartData[currentIndex];
+    var before = state.chartData[currentIndex - 1];
+    var after = state.chartData[currentIndex + 1];
+    print(before.toString());
+    print(current.toString());
+    print(after.toString());
+
+    // get the explanation
+    // send the message to the LLM
+    // show the explanation dialog
+
+  }
 }
 
 class ChatMessage {

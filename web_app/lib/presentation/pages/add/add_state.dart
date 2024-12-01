@@ -24,6 +24,10 @@ class ChartData {
       this.description,
       this.dataType,
       );
+
+  toString() {
+    return 'Date: $date, Value: $value, Lower Bound: $yhatLower, Upper Bound: $yhatUpper, Product: $productName, Description: $description, Data Type: $dataType';
+  }
 }
 
 /// Forecast Data model based on API response
