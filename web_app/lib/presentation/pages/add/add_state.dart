@@ -1,7 +1,5 @@
 // lib/pages/add_state.dart
 
-import 'package:flutter/material.dart';
-
 enum DataType {
   forecast,  // Predicted future data
 }
@@ -24,13 +22,8 @@ class ChartData {
       this.description,
       this.dataType,
       );
-
-  toString() {
-    return 'Date: $date, Value: $value, Lower Bound: $yhatLower, Upper Bound: $yhatUpper, Product: $productName, Description: $description, Data Type: $dataType';
-  }
 }
 
-/// Forecast Data model based on API response
 class ForecastData {
   final String date; // Expecting "YYYY-MM-DD"
   final double yhat;
@@ -63,6 +56,14 @@ class AddState {
 
   // Forecast Data fetched from API
   List<ForecastData>? forecastData;
+
+  // Mapping of countries to their respective ports
+  final Map<String, int> countryPortMap = {
+    'elnonie': 7071,
+    'floresland': 7072,
+    'zigoland': 7070,
+    // Add more countries and ports as needed
+  };
 
   AddState() {
     // No initial data

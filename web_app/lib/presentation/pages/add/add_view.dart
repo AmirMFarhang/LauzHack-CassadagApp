@@ -99,7 +99,7 @@ class _AddPageState extends State<AddPage> {
                 ],
               ),
               padding: const EdgeInsets.all(16.0), // Padding inside the container
-              child:  RichText(
+              child: RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
                   style: TextStyle(
@@ -108,14 +108,14 @@ class _AddPageState extends State<AddPage> {
                     color: Colors.black87,
                   ),
                   children: [
-                    TextSpan(
+                    const TextSpan(
                       text: "Power your decisions with ",
                     ),
                     TextSpan(
                       text: "real-time insights",
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    TextSpan(
+                    const TextSpan(
                       text:
                       " and advanced analytics. Forecast trends, assess market impact, and unlock new opportunities with the power of ",
                     ),
@@ -203,9 +203,9 @@ class _AddPageState extends State<AddPage> {
       return const Center(child: Text("No chart data available."));
     }
 
-    // Determine the minimum and maximum dates from chartData
-    DateTime minDate = state.chartData.first.date;
-    DateTime maxDate = state.chartData.last.date;
+    // Set the date range to Jan 2025 to Dec 2025
+    DateTime minDate = DateTime(2025, 1, 1);
+    DateTime maxDate = DateTime(2025, 12, 31);
 
     return Center(
       child: Container(
@@ -234,8 +234,14 @@ class _AddPageState extends State<AddPage> {
             title: const AxisTitle(text: 'Month'),
           ),
           primaryYAxis: NumericAxis(
-            minimum: state.chartData.map((data) => data.yhatLower ?? data.value).reduce(min) - 1000,
-            maximum: state.chartData.map((data) => data.yhatUpper ?? data.value).reduce(max) + 1000,
+            minimum: state.chartData
+                .map((data) => data.yhatLower ?? data.value)
+                .reduce(min) -
+                1000,
+            maximum: state.chartData
+                .map((data) => data.yhatUpper ?? data.value)
+                .reduce(max) +
+                1000,
             labelFormat: '{value}',
             axisLine: const AxisLine(width: 0),
             majorTickLines: const MajorTickLines(color: Colors.transparent),
@@ -243,62 +249,59 @@ class _AddPageState extends State<AddPage> {
           ),
           series: _buildSeries(state),
           tooltipBehavior: TooltipBehavior(
-              shouldAlwaysShow: false,
-              enable: true,
-              format: 'point.x : point.y mg',
-              builder: (dynamic data, dynamic point, dynamic series,
-                  int pointIndex, int seriesIndex) {
-                return Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  // show the information and explain button
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Month: ${data.date.month}',
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                          const SizedBox(height: 5),
-                          Text(
-                            'Year: ${data.date.year}',
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                          const SizedBox(height: 5),
-                          Text(
-                            'Sales: ${data.value.toInt()}',
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                        ], ),
-                      // explain button
-                      const SizedBox(width: 10),
-                      ElevatedButton(
-                        onPressed: () {
-
-                          model.explain(data.date.month, data.date.year, data.value);
-                          // show the explanation dialog
-                        },
-                        child: const Text('Explain'),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-
+            enable: true,
+            format: 'point.x : point.y mg',
+            builder: (dynamic data, dynamic point, dynamic series,
+                int pointIndex, int seriesIndex) {
+              return Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                // Show the information and explain button
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Month: ${DateFormat('MMMM').format(data.date)}',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          'Year: ${data.date.year}',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          'Sales: ${data.value.toInt()} mg',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ],
+                    ),
+                    // Explain button
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        model.explain(data.date.month, data.date.year, data.value);
+                        // The explanation dialog is handled within the explain method
+                      },
+                      child: const Text('Explain'),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
           zoomPanBehavior: ZoomPanBehavior(
             enablePanning: true,
@@ -313,13 +316,12 @@ class _AddPageState extends State<AddPage> {
             activationMode: ActivationMode.singleTap,
             lineType: CrosshairLineType.vertical,
           ),
-          onDataLabelTapped: (DataLabelTapDetails args) {
-            if (state.chartData.isNotEmpty && args.pointIndex < state.chartData.length) {
-
-            }
-          },
-          // Handle point taps to set regional context
-
+          // onPointTapped: (PointTapArgs args) {
+          //   if (state.chartData.isNotEmpty && args.pointIndex < state.chartData.length) {
+          //     final clickedData = state.chartData[args.pointIndex];
+          //     model.onGraphPointClicked(clickedData);
+          //   }
+          // },
         ),
       ),
     );

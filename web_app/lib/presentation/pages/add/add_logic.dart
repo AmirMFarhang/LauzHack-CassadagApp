@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'dart:math';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/OllamaClient.dart';
@@ -77,7 +78,14 @@ Side Effects: $description
         // General context including all forecast data
         graphData = '''
 General Context:
-Here is the forecast data provided by the API the values are in mg of the product sold:
+the product ${state.selectedProduct} in ${state.selectedCountry}.
+''';
+      }
+
+      // Add forecast data to the graph data
+      if (state.forecastData != null && state.forecastData!.isNotEmpty) {
+        graphData += '''
+Here is the forecast data provided by the API the values are in mg not dollars of the product sold:
 ${_formatForecastDataForLLM()}
 ''';
       }
@@ -218,7 +226,11 @@ ${_formatForecastDataForLLM()}
     // Construct the API URL with query parameters
     final String product = state.selectedProduct;
     final String country = state.selectedCountry;
-    final Uri apiUrl = Uri.parse('http://3.94.162.57:7070/forecast?product=$product&country=$country');
+    int? port = state.countryPortMap[country];
+    if (port == null) {
+      port = 7070; // Default port
+    }
+    final Uri apiUrl = Uri.parse('http://3.94.162.57:$port/forecast');
 
     try {
       // Set isGenerating to true to disable filters and chat input
@@ -343,20 +355,90 @@ ${_formatForecastDataForLLM()}
     super.onClose();
   }
 
-  void explain(month, year, value) {
-    // get the month and year and value before and after the point
-    var currentIndex = state.chartData.indexWhere((data) => data.value == value);
+  /// Explains the impactful parameters for a specific date.
+  void explain(int month, int year, double value) async {
+    // Find the data point based on month, year, and value
+    var currentIndex = state.chartData.indexWhere(
+          (data) => data.value == value && data.date.month == month && data.date.year == year,
+    );
+
+    if (currentIndex == -1) {
+      // Data point not found
+      Get.snackbar("Error", "Data point not found.");
+      return;
+    }
+
     var current = state.chartData[currentIndex];
-    var before = state.chartData[currentIndex - 1];
-    var after = state.chartData[currentIndex + 1];
-    print(before.toString());
-    print(current.toString());
-    print(after.toString());
 
-    // get the explanation
-    // send the message to the LLM
-    // show the explanation dialog
+    // Construct date string
+    String dateStr = DateFormat('yyyy-MM-dd').format(current.date);
 
+    // Get port based on country
+    int? port = state.countryPortMap[state.selectedCountry];
+
+    if (port == null) {
+      Get.snackbar("Error", "Port not found for country ${state.selectedCountry}");
+      return;
+    }
+
+    // Construct API URL
+    String apiUrl = 'http://3.94.162.57:$port/impactful-parameters/$dateStr';
+    print('Fetching impactful parameters from: $apiUrl');
+    try {
+      // Show loading dialog
+      Get.dialog(
+        const Center(child: CircularProgressIndicator()),
+        barrierDismissible: false,
+      );
+
+      // Send GET request
+      final response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        String impactfulParams = response.body; // Assuming the response is plain text or JSON
+
+        // Send impactfulParams to llama to get comprehensive report
+        String userMessage = "Provide a comprehensive report based on the following impactful parameters: $impactfulParams";
+
+        String appContext = '''
+Comprehensive Report:
+Impactful Parameters: $impactfulParams
+''';
+
+        String llamaResponse = '';
+
+        await for (var response in llama.sendMessage(
+          userMessage,
+          appContext: appContext,
+        )) {
+          llamaResponse += response;
+        }
+
+        // Close loading dialog
+        Get.back();
+
+        // Show the report in a dialog
+        Get.dialog(
+          AlertDialog(
+            title: const Text('Impactful Parameters Report'),
+            content: SingleChildScrollView(child: Text(llamaResponse)),
+            actions: [
+              TextButton(
+                onPressed: () => Get.back(),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        // Handle non-200 responses
+        Get.back(); // Close loading dialog
+        Get.snackbar("Error", "Failed to fetch impactful parameters. Status Code: ${response.statusCode}");
+      }
+    } catch (e) {
+      Get.back(); // Close loading dialog
+      Get.snackbar("Error", "Error fetching impactful parameters: $e");
+    }
   }
 }
 
