@@ -1,3 +1,7 @@
+// lib/pages/add_state.dart
+
+import 'package:flutter/material.dart';
+
 enum DataType {
   real,    // Actual historical data
   test,    // Test/validation data
@@ -27,7 +31,7 @@ class ProductData {
 class ChartData {
   final int month;
   final int year;
-  final double value;
+  double value; // Made mutable to allow modifications during mock redraws
   final double? predictedValue;
   final String productName;
   final String description;
@@ -53,12 +57,9 @@ class AddState {
   String selectedCountry = 'Switzerland';
   Map<String, List<ProductData>> productsByCountry = {};
 
-  List<int> selectedCountries = [];
-
   AddState() {
     initializeData();
   }
-
 
   void initializeData() {
     productsByCountry = {

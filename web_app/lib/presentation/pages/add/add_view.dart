@@ -21,9 +21,13 @@ class AddPage extends StatefulWidget {
 
 class _AddPageState extends State<AddPage> {
 
+  // ScrollController to auto-scroll to the latest message
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void dispose() {
     Get.delete<AddModel>();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -90,15 +94,15 @@ class _AddPageState extends State<AddPage> {
                 ],
               ),
               padding: const EdgeInsets.all(16.0), // Padding inside the container
-              child: RichText(
+              child:  RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
-                  style: Theme.of(Get.context!).textTheme.labelMedium!.copyWith(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
-                  children: const [
+                  children: [
                     TextSpan(
                       text: "Power your decisions with ",
                     ),
@@ -155,13 +159,10 @@ class _AddPageState extends State<AddPage> {
               SizedBox(
                 width: Get.width * 0.005, // Adjusted width calculation
               ),
-              Text(
+              const Text(
                 "Filter Analysis by ",
                 textAlign: TextAlign.center,
-                style: Theme.of(Get.context!)
-                    .textTheme
-                    .labelMedium!
-                    .copyWith(
+                style: TextStyle(
                     fontSize: 16, fontWeight: FontWeight.w700),
               ),
               SizedBox(
@@ -196,6 +197,7 @@ class _AddPageState extends State<AddPage> {
           ),
         ),
         const SizedBox(height: 20),
+
         Expanded(
           child: Center(
             child: Container(
@@ -353,6 +355,13 @@ class _AddPageState extends State<AddPage> {
                     );
                   }
                 },
+                // // Handle point taps to set regional context
+                // onPointTapped: (PointTapArgs args) {
+                //   if (state.chartData != null && args.pointIndex < state.chartData!.length) {
+                //     final clickedData = state.chartData![args.pointIndex];
+                //     model.onGraphPointClicked(clickedData);
+                //   }
+                // },
               ),
             ),
           ),
@@ -373,7 +382,19 @@ class _AddPageState extends State<AddPage> {
           // Chat messages list
           Expanded(
             child: Obx(() {
+              // Auto-scroll to the latest message when a new message is added
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (_scrollController.hasClients) {
+                  _scrollController.animateTo(
+                    _scrollController.position.maxScrollExtent,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOut,
+                  );
+                }
+              });
+
               return ListView.builder(
+                controller: _scrollController,
                 padding: const EdgeInsets.all(10),
                 itemCount: model.messages.length,
                 itemBuilder: (context, index) {
@@ -391,22 +412,31 @@ class _AddPageState extends State<AddPage> {
                             : Colors.grey.shade300,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: message.isUser
-                          ? Text(
-                        message.message,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      )
-                          : Html(
-                        data: message.message,
-                        style: {
-                          'body': Style(
-                            fontSize: FontSize(16),
-                            color: Colors.black87,
+                      child: Column(
+                        crossAxisAlignment: message.isUser
+                            ? CrossAxisAlignment.end
+                            : CrossAxisAlignment.start,
+                        children: [
+                          message.isUser
+                              ? Text(
+                            message.message,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          )
+                              : Html(
+                            data: message.message,
+                            style: {
+                              'body': Style(
+                                fontSize:  FontSize(16),
+                                color: Colors.black87,
+                              ),
+                            },
                           ),
-                        },
+                          const SizedBox(height: 4),
+
+                        ],
                       ),
                     ),
                   );
@@ -462,27 +492,6 @@ class _AddPageState extends State<AddPage> {
             );
           }),
         ],
-      ),
-    );
-  }
-
-  /// Optionally, you can keep _buildMessage as a helper if needed elsewhere
-  Widget _buildMessage(String message) {
-    return Container(
-      margin: const EdgeInsets.all(10),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Html(
-        data: message,
-        style: {
-          'body': Style(
-            fontSize: FontSize(16),
-            color: Colors.white,
-          ),
-        },
       ),
     );
   }

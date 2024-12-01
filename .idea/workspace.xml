@@ -5,17 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1c4b3180-c3eb-4a4e-b19e-354ba3a19e68" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/web_app/lib/data/OllamaClient.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web_app/.flutter-plugins" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/.flutter-plugins" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web_app/.flutter-plugins-dependencies" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/.flutter-plugins-dependencies" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web_app/lib/data/OllamaClient.dart" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/lib/data/OllamaClient.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_logic.dart" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_logic.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_state.dart" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_state.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web_app/linux/flutter/generated_plugin_registrant.cc" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/linux/flutter/generated_plugin_registrant.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web_app/linux/flutter/generated_plugin_registrant.h" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/linux/flutter/generated_plugin_registrant.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web_app/linux/flutter/generated_plugins.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/linux/flutter/generated_plugins.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web_app/macos/Flutter/GeneratedPluginRegistrant.swift" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/macos/Flutter/GeneratedPluginRegistrant.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web_app/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

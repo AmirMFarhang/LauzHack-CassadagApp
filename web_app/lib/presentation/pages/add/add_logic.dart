@@ -19,12 +19,15 @@ class AddModel extends BaseGetxController with StateMixin<AddState> {
   // Flag to indicate if a response is being generated
   final RxBool isGenerating = false.obs;
 
+  // Current regional context data (if any)
+  String? currentRegionalContext;
+
   @override
   void onReady() {
     _generateForecastData();
     change(state, status: RxStatus.success());
     // Add initial report about forecast
-    messages.add(ChatMessage(message: 'Forecast report generated', isUser: false));
+    messages.add(ChatMessage(message: 'Forecast report generated.', isUser: false));
     super.onReady();
   }
 
@@ -46,8 +49,37 @@ class AddModel extends BaseGetxController with StateMixin<AddState> {
     String buffer = '';
 
     try {
+      // Prepare app context
+      String appContext = '''
+A platform for forecasting information based on historical data with AI collaboration and specific medical interpolation. It considers all kinds of market aspects for biochemical compounds, from sales to side effects, and is helpful for analyzing products with historical information or newly made synthetic applications.
+''';
+
+      // Prepare graph data
+      String graphData = '';
+
+      if (currentRegionalContext != null) {
+        // Extract data around the clicked point
+        // For simplicity, we'll mock this data
+        graphData = '''
+Regional Context:
+Selected Point - Month: ${currentRegionalContext!.split(',')[0]}, Year: ${currentRegionalContext!.split(',')[1]}
+Sales: ${currentRegionalContext!.split(',')[2]} mg
+Side Effects: ${currentRegionalContext!.split(',')[3]}
+''';
+      } else {
+        // General context
+        graphData = '''
+General Context:
+Displaying overall sales and side effects for biochemical compounds across regions. Forecast data is available based on historical trends.
+''';
+      }
+
       // Listen to the stream of responses
-      await for (var response in llama.sendMessage(userMessage)) {
+      await for (var response in llama.sendMessage(
+        userMessage,
+        appContext: appContext,
+        graphData: graphData,
+      )) {
         buffer += response;
       }
 
@@ -56,6 +88,11 @@ class AddModel extends BaseGetxController with StateMixin<AddState> {
         messages.removeLast();
       }
       messages.add(ChatMessage(message: buffer, isUser: false));
+
+      // Check if the LLM requested a parameter change
+      if (_detectParameterChange(buffer)) {
+        _handleParameterChange();
+      }
     } catch (e) {
       // Remove the "Typing..." indicator if present
       if (messages.isNotEmpty && messages.last.message == "Typing...") {
@@ -67,6 +104,45 @@ class AddModel extends BaseGetxController with StateMixin<AddState> {
     } finally {
       // Set isGenerating to false to enable input
       isGenerating.value = false;
+      // Reset regional context after handling
+      currentRegionalContext = null;
+    }
+  }
+
+  /// Detects if the response contains a request to change parameters.
+  bool _detectParameterChange(String response) {
+    // Simple keyword detection; can be enhanced with NLP techniques
+    final keywords = ['change parameters', 'modify parameters', 'update parameters', 'what if'];
+    for (var keyword in keywords) {
+      if (response.toLowerCase().contains(keyword)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// Handles parameter change requests by invoking a mock graph redraw.
+  void _handleParameterChange() {
+    // Mock action: Invoke a redraw with changed parameters
+    // In a real scenario, this would trigger the forecasting model with new parameters
+
+    // Example: Change the forecast trend by increasing sales by 10%
+    _mockRedrawGraph();
+  }
+
+  /// Mocks the graph redraw process by modifying the chart data.
+  void _mockRedrawGraph() {
+    // For demonstration, we'll increase all forecasted sales by 10%
+    if (state.chartData != null) {
+      for (var data in state.chartData!) {
+        if (data.dataType == DataType.forecast) {
+          data.value *= 1.10; // Increase by 10%
+        }
+      }
+      update(); // Notify listeners about the updated chart data
+      messages.add(ChatMessage(message: "Graph parameters updated based on your request.", isUser: false));
+    } else {
+      messages.add(ChatMessage(message: "Unable to update graph parameters. No forecast data available.", isUser: false));
     }
   }
 
@@ -158,6 +234,14 @@ class AddModel extends BaseGetxController with StateMixin<AddState> {
     messageController.dispose();
     state.chartData?.clear();
     super.onClose();
+  }
+
+  /// Handles graph point clicks by setting the regional context.
+  void onGraphPointClicked(ChartData clickedData) {
+    currentRegionalContext = '${clickedData.month},${clickedData.year},${clickedData.value},${clickedData.description}';
+    // Optionally, you can automatically send a prompt to the LLM based on the click
+    // For example:
+    // addMessageWithContext('Tell me more about this data point.');
   }
 }
 
