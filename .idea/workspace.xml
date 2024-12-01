@@ -5,8 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1c4b3180-c3eb-4a4e-b19e-354ba3a19e68" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/web_app/lib/presentation/components/custome_drawer.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web_app/lib/data/OllamaClient.dart" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/lib/data/OllamaClient.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web_app/.flutter-plugins-dependencies" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/.flutter-plugins-dependencies" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web_app/build/f872507f30e2ff2523f0f1d19160266e.cache.dill.track.dill" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/build/f872507f30e2ff2523f0f1d19160266e.cache.dill.track.dill" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_logic.dart" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_logic.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_state.dart" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_state.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/web_app/lib/presentation/pages/add/add_view.dart" afterDir="false" />
@@ -37,21 +39,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "web__app__#1",
-    "ignore.virus.scanning.warn.message": "true",
-    "io.flutter.reload.alreadyRun": "true",
-    "last_opened_file_path": "D:/Programming/LauzHack-CassadagApp",
-    "show.migrate.to.gradle.popup": "false"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;web__app__#1&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;io.flutter.reload.alreadyRun&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Programming/LauzHack-CassadagApp&quot;,
+    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="main.dart" type="FlutterRunConfigurationType" factoryName="Flutter" temporary="true" nameIsGenerated="true">
       <option name="filePath" value="$PROJECT_DIR$/web_app/lib/main.dart" />

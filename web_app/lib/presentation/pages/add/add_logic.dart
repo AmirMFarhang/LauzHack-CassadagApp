@@ -1,11 +1,13 @@
 // lib/pages/add_logic.dart
 
+import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/OllamaClient.dart';
 import 'add_state.dart';
 import '/config/core/services/base_controller.dart';
+import 'package:http/http.dart' as http;
 
 class AddModel extends BaseGetxController with StateMixin<AddState> {
   final AddState state = AddState();
@@ -23,12 +25,10 @@ class AddModel extends BaseGetxController with StateMixin<AddState> {
   String? currentRegionalContext;
 
   @override
-  void onReady() {
-    _generateForecastData();
-    change(state, status: RxStatus.success());
-    // Add initial report about forecast
-    messages.add(ChatMessage(message: 'Forecast report generated.', isUser: false));
-    super.onReady();
+  void onInit() {
+    super.onInit();
+    // Initial fetch of forecast data
+    fetchForecastData();
   }
 
   /// Handles sending a message and processing the response stream.
@@ -59,18 +59,26 @@ A platform for forecasting information based on historical data with AI collabor
 
       if (currentRegionalContext != null) {
         // Extract data around the clicked point
-        // For simplicity, we'll mock this data
-        graphData = '''
+        // Format: "Month,Year,Sales,Description"
+        List<String> contextParts = currentRegionalContext!.split(',');
+        if (contextParts.length >= 4) {
+          String month = contextParts[0];
+          String year = contextParts[1];
+          String sales = contextParts[2];
+          String description = contextParts[3];
+          graphData = '''
 Regional Context:
-Selected Point - Month: ${currentRegionalContext!.split(',')[0]}, Year: ${currentRegionalContext!.split(',')[1]}
-Sales: ${currentRegionalContext!.split(',')[2]} mg
-Side Effects: ${currentRegionalContext!.split(',')[3]}
+Selected Point - Month: $month, Year: $year
+Sales: $sales mg
+Side Effects: $description
 ''';
+        }
       } else {
-        // General context
+        // General context including all forecast data
         graphData = '''
 General Context:
-Displaying overall sales and side effects for biochemical compounds across regions. Forecast data is available based on historical trends.
+Here is the forecast data provided by the API the values are in mg of the product sold:
+${_formatForecastDataForLLM()}
 ''';
       }
 
@@ -93,6 +101,9 @@ Displaying overall sales and side effects for biochemical compounds across regio
       if (_detectParameterChange(buffer)) {
         _handleParameterChange();
       }
+
+      // Update state status to success
+      change(state, status: RxStatus.success());
     } catch (e) {
       // Remove the "Typing..." indicator if present
       if (messages.isNotEmpty && messages.last.message == "Typing...") {
@@ -101,12 +112,30 @@ Displaying overall sales and side effects for biochemical compounds across regio
 
       // Add an error message
       messages.add(ChatMessage(message: "Error: ${e.toString()}", isUser: false));
+
+      // Update state status to error
+      change(state, status: RxStatus.error(e.toString()));
     } finally {
       // Set isGenerating to false to enable input
       isGenerating.value = false;
       // Reset regional context after handling
       currentRegionalContext = null;
     }
+  }
+
+  /// Formats the forecast data into a readable table or summary for the LLM
+  String _formatForecastDataForLLM() {
+    if (state.forecastData == null || state.forecastData!.isEmpty) {
+      return "No forecast data available.";
+    }
+
+    StringBuffer sb = StringBuffer();
+    sb.writeln("| Date       | Forecast (yhat) | Lower Bound (yhat_lower) | Upper Bound (yhat_upper) |");
+    sb.writeln("|------------|-----------------|--------------------------|--------------------------|");
+    for (var forecast in state.forecastData!) {
+      sb.writeln("| ${forecast.date} | ${forecast.yhat.toStringAsFixed(2)} | ${forecast.yhatLower.toStringAsFixed(2)} | ${forecast.yhatUpper.toStringAsFixed(2)} |");
+    }
+    return sb.toString();
   }
 
   /// Detects if the response contains a request to change parameters.
@@ -133,121 +162,193 @@ Displaying overall sales and side effects for biochemical compounds across regio
   /// Mocks the graph redraw process by modifying the chart data.
   void _mockRedrawGraph() {
     // For demonstration, we'll increase all forecasted sales by 10%
-    if (state.chartData != null) {
-      for (var data in state.chartData!) {
+    if (state.chartData.isNotEmpty) {
+      for (var data in state.chartData) {
         if (data.dataType == DataType.forecast) {
           data.value *= 1.10; // Increase by 10%
+          if (data.yhatLower != null) {
+            data.yhatLower = data.yhatLower! * 1.10;
+          }
+          if (data.yhatUpper != null) {
+            data.yhatUpper = data.yhatUpper! * 1.10;
+          }
         }
       }
-      update(); // Notify listeners about the updated chart data
+      // Notify listeners about the updated chart data
+      change(state, status: RxStatus.success());
       messages.add(ChatMessage(message: "Graph parameters updated based on your request.", isUser: false));
     } else {
       messages.add(ChatMessage(message: "Unable to update graph parameters. No forecast data available.", isUser: false));
+      // Update state status to empty
+      change(state, status: RxStatus.empty());
     }
   }
 
-  void changeCountry(String country) {
-    state.selectedCountry = country;
-    state.updateChartData();
-    _generateForecastData();
-    change(state, status: RxStatus.success());
+  /// Handles changes in the selected product.
+  void changeProduct(String product) {
+    if (product == state.selectedProduct) return;
+
+    state.selectedProduct = product;
+    state.updateAvailableCountries();
+    state.resetChartData();
+
+    // Fetch new forecast data based on the updated filters
+    fetchForecastData();
+
+    // Update state status to loading
+    change(state, status: RxStatus.loading());
   }
 
-  void _generateForecastData() {
-    if (state.chartData == null || state.chartData!.isEmpty) return;
+  /// Handles changes in the selected country.
+  void changeCountry(String country) {
+    if (country == state.selectedCountry) return;
 
-    final lastData = state.chartData!.last;
-    double lastValue = lastData.value;
-    int nextMonth = lastData.month;
-    int nextYear = lastData.year;
+    state.selectedCountry = country;
+    state.resetChartData();
 
-    // Generate 6 months of forecast data
-    for (int i = 0; i < 6; i++) {
-      // Add some randomization to the forecast while maintaining trend
-      lastValue += _random.nextDouble() * 8 - 2; // Random growth between -2 and 6
+    // Fetch new forecast data based on the updated filters
+    fetchForecastData();
 
-      nextMonth++;
-      if (nextMonth > 12) {
-        nextMonth = 1;
-        nextYear++;
+    // Update state status to loading
+    change(state, status: RxStatus.loading());
+  }
+
+  /// Fetches forecast data from the API based on selected product and country.
+  Future<void> fetchForecastData() async {
+    // Construct the API URL with query parameters
+    final String product = state.selectedProduct;
+    final String country = state.selectedCountry;
+    final Uri apiUrl = Uri.parse('http://3.94.162.57:7070/forecast?product=$product&country=$country');
+
+    try {
+      // Set isGenerating to true to disable filters and chat input
+      isGenerating.value = true;
+
+      // Show a loading message
+      messages.add(ChatMessage(message: "Fetching forecast data...", isUser: false));
+
+      final response = await http.get(apiUrl);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+
+        List<dynamic> ds = data['ds'];
+        List<dynamic> yhat = data['yhat'];
+        List<dynamic> yhatLower = data['yhat_lower'];
+        List<dynamic> yhatUpper = data['yhat_upper'];
+
+        // Clear existing forecast data
+        state.forecastData = [];
+
+        // Parse the forecast data
+        for (int i = 0; i < ds.length; i++) {
+          state.forecastData!.add(ForecastData(
+            date: ds[i],
+            yhat: (yhat[i] as num).toDouble(),
+            yhatLower: (yhatLower[i] as num).toDouble(),
+            yhatUpper: (yhatUpper[i] as num).toDouble(),
+          ));
+        }
+
+        // Update the chart with forecast data
+        _updateChartWithForecast();
+
+        // Remove the loading message
+        if (messages.isNotEmpty && messages.last.message == "Fetching forecast data...") {
+          messages.removeLast();
+        }
+
+        // Notify the LLM that forecast data is available
+        messages.add(ChatMessage(message: "Forecast data successfully fetched and updated.", isUser: false));
+
+        // Update state status to success
+        change(state, status: RxStatus.success());
+      } else {
+        // Handle non-200 responses
+        throw Exception('Failed to fetch forecast data. Status Code: ${response.statusCode}');
+      }
+    } catch (e) {
+      // Remove the loading message if present
+      if (messages.isNotEmpty && messages.last.message == "Fetching forecast data...") {
+        messages.removeLast();
       }
 
-      state.chartData!.add(ChartData(
-        nextMonth,
-        nextYear,
-        lastValue,
-        null,
-        lastData.productName,
+      // Add an error message
+      messages.add(ChatMessage(message: "Error fetching forecast data: ${e.toString()}", isUser: false));
+
+      // Update state status to error
+      change(state, status: RxStatus.error(e.toString()));
+    } finally {
+      // Re-enable filters and chat input
+      isGenerating.value = false;
+    }
+  }
+
+  /// Updates the chart with the fetched forecast data.
+  void _updateChartWithForecast() {
+    if (state.forecastData == null || state.forecastData!.isEmpty) return;
+
+    // Clear existing forecast data in chartData to ensure only API data is shown
+    state.chartData.removeWhere((data) => data.dataType == DataType.forecast);
+
+    // Convert ForecastData to ChartData and append to chartData
+    for (var forecast in state.forecastData!) {
+      // Parse the date
+      DateTime parsedDate = DateTime.parse(forecast.date);
+
+      state.chartData.add(ChartData(
+        parsedDate,
+        forecast.yhat,
+        forecast.yhatLower,
+        forecast.yhatUpper,
+        state.selectedProduct,
         'Forecasted based on historical trends',
         DataType.forecast,
       ));
     }
 
     // Notify listeners about the updated chart data
-    update();
+    change(state, status: RxStatus.success());
   }
 
-  String getMonthName(int month) {
+  /// Handles graph point clicks by setting the regional context.
+  void onGraphPointClicked(ChartData clickedData) {
+    // Format: "Month,Year,Sales,Description"
+    currentRegionalContext = '${_getMonthName(clickedData.date.month)},${clickedData.date.year},${clickedData.value.toStringAsFixed(2)},${clickedData.description}';
+    // Optionally, you can automatically send a prompt to the LLM based on the click
+    // For example:
+    // addMessageWithContext('Tell me more about this data point.');
+  }
+
+  /// Converts month number to month name
+  String _getMonthName(int month) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
     ];
     return months[(month - 1) % 12];
   }
 
-  String getFormattedDate(int month, int year) {
-    return '${getMonthName(month)} ${year}';
-  }
-
-  void showDataPointDetails(BuildContext context, ChartData point) {
-    Get.dialog(
-      AlertDialog(
-        title: Text('${point.productName} - ${getFormattedDate(point.month, point.year)}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Country: ${state.selectedCountry}'),
-            Text('Product: ${point.productName}'),
-            Text('Period: ${getFormattedDate(point.month, point.year)}'),
-            Text('Value: ${point.value.toStringAsFixed(2)} mg'),
-            if (point.predictedValue != null)
-              Text('Predicted: ${point.predictedValue!.toStringAsFixed(2)} mg'),
-            const SizedBox(height: 8),
-            Text('Details: ${point.description}'),
-            const SizedBox(height: 8),
-            Text('Data Type: ${point.dataType.toString().split('.').last.toUpperCase()}'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            child: const Text('Close'),
-            onPressed: () => Get.back(),
-          ),
-        ],
-      ),
-    );
+  /// Sends a message with context automatically (optional)
+  void addMessageWithContext(String userMessage) {
+    // Set the message controller text and send the message
+    messageController.text = userMessage;
+    addMessage();
   }
 
   @override
   void onClose() {
     messageController.dispose();
-    state.chartData?.clear();
+    state.chartData.clear();
     super.onClose();
-  }
-
-  /// Handles graph point clicks by setting the regional context.
-  void onGraphPointClicked(ChartData clickedData) {
-    currentRegionalContext = '${clickedData.month},${clickedData.year},${clickedData.value},${clickedData.description}';
-    // Optionally, you can automatically send a prompt to the LLM based on the click
-    // For example:
-    // addMessageWithContext('Tell me more about this data point.');
   }
 }
 
 class ChatMessage {
   final String message;
   final bool isUser;
+  final DateTime timestamp;
 
-  ChatMessage({required this.message, required this.isUser});
+  ChatMessage({required this.message, required this.isUser, DateTime? timestamp})
+      : timestamp = timestamp ?? DateTime.now();
 }

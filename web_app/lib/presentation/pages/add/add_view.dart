@@ -1,16 +1,23 @@
 // lib/pages/add_view.dart
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import '../../../config/theme/app_colors.dart';
-import '../../components/button.dart';
-import '../../components/country_selection.dart';
+import 'package:intl/intl.dart'; // Add this import for date formatting
 import '../../components/custom_drawer.dart';
 import 'add_logic.dart';
 import 'add_state.dart';
+
+/// Extension to capitalize the first letter of a string
+extension StringCasingExtension on String {
+  String get capitalizeFirst {
+    if (this.isEmpty) return this;
+    return '${this[0].toUpperCase()}${substring(1)}';
+  }
+}
 
 class AddPage extends StatefulWidget {
   const AddPage({super.key});
@@ -20,7 +27,6 @@ class AddPage extends StatefulWidget {
 }
 
 class _AddPageState extends State<AddPage> {
-
   // ScrollController to auto-scroll to the latest message
   final ScrollController _scrollController = ScrollController();
 
@@ -61,8 +67,7 @@ class _AddPageState extends State<AddPage> {
     return const CustomDrawer();
   }
 
-  Widget _buildSideMenuItem(IconData icon, String text,
-      VoidCallback onPressed) {
+  Widget _buildSideMenuItem(IconData icon, String text, VoidCallback onPressed) {
     return ListTile(
       leading: Icon(icon),
       title: Text(text),
@@ -123,6 +128,8 @@ class _AddPageState extends State<AddPage> {
               ),
             ),
             const SizedBox(height: 20),
+            _buildFilterSection(model, state),
+            const SizedBox(height: 20),
             Expanded(
               child: _buildChart(model, state),
             ),
@@ -132,242 +139,164 @@ class _AddPageState extends State<AddPage> {
     );
   }
 
-
-  Widget _buildChart(AddModel model, AddState state) {
-    return Column(
+  /// Builds the filter section with product and country selectors
+  Widget _buildFilterSection(AddModel model, AddState state) {
+    return Row(
       children: [
-        const SizedBox(height: 20),
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-              color:
-              Theme.of(Get.context!).colorScheme.primaryContainer,
-              borderRadius: const BorderRadius.all(Radius.circular(5)),
-              boxShadow: [
-                BoxShadow(
-                    color: AppColors.black.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4))
-              ]),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              SvgPicture.asset(
-                "assets/svg/ic_filter.svg",
-                color: Get.theme.colorScheme.primary,
-              ),
-              SizedBox(
-                width: Get.width * 0.005, // Adjusted width calculation
-              ),
-              const Text(
-                "Filter Analysis by ",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w700),
-              ),
-              SizedBox(
-                width: Get.width * 0.005, // Adjusted width calculation
-              ),
-              SizedBox(
-                width: Get.width * 0.005, // Adjusted width calculation
-              ),
-              Flexible(
-                flex: 2,
-                child: ProviderSelection(
-                  selectedLabel: state.selectedCountry,
-                  data: state.availableCountries,
-                  onChanged: (value) {
-                    if (value != null) {
-                      model.changeCountry(value);
-                    }
-                  },
-                ),
-              ),
-              Flexible(
-                flex: 2,
-                child: ProviderSelection(
-                  selectedLabel: "Product A",
-                  data: const ["Product A", "Product B"],
-                  onChanged: (value) {
-                    // Implement product filter change if needed
-                  },
-                ),
-              ),
-            ],
+        // Product Selector
+        Expanded(
+          flex: 2,
+          child: DropdownButtonFormField<String>(
+            decoration: const InputDecoration(
+              labelText: 'Product',
+              border: OutlineInputBorder(),
+            ),
+            value: state.selectedProduct,
+            items: state.availableProducts.map((product) {
+              return DropdownMenuItem(
+                value: product,
+                child: Text(product),
+              );
+            }).toList(),
+            onChanged: model.isGenerating.value
+                ? null
+                : (value) {
+              if (value != null) {
+                model.changeProduct(value);
+              }
+            },
           ),
         ),
-        const SizedBox(height: 20),
-
+        const SizedBox(width: 20),
+        // Country Selector
         Expanded(
-          child: Center(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: Colors.grey),
-              ),
-              child: SfCartesianChart(
-                plotAreaBorderWidth: 0,
-                title: ChartTitle(
-                  text: '${state.selectedCountry} - Monthly Product Performance',
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                legend: const Legend(
-                  isVisible: true,
-                  overflowMode: LegendItemOverflowMode.wrap,
-                  position: LegendPosition.bottom,
-                ),
-                primaryXAxis: NumericAxis(
-                  minimum: 1,
-                  maximum: state.chartData!.length.toDouble(),
-                  interval: 1,
-                  majorGridLines: const MajorGridLines(width: 0),
-                  plotBands: const <PlotBand>[
-                    PlotBand(
-                        start: 13, // Start of the forecast period
-                        end: 18, // End of the forecast period
-                        size: 20,
-                        associatedAxisStart: 230.5,
-                        text: 'Market Expansion',
-                        verticalTextAlignment: TextAnchor.end,
-                        associatedAxisEnd: 200.5,
-                        textAngle: 0,
-
-                        isVisible: true,
-                        color: Color(0xFF0095F5),
-                        textStyle: TextStyle(color: Colors.white, fontSize: 17)),
-                  ],
-                  title: const AxisTitle(text: 'Month'),
-                  axisLabelFormatter: (AxisLabelRenderDetails details) {
-                    final int monthIndex = details.value.toInt();
-                    if (monthIndex <= state.chartData!.length) {
-                      final chartData = state.chartData![monthIndex - 1];
-                      return ChartAxisLabel(
-                        model.getFormattedDate(chartData.month, chartData.year),
-                        details.textStyle,
-                      );
-                    }
-                    return ChartAxisLabel('', details.textStyle);
-                  },
-                ),
-                primaryYAxis: NumericAxis(
-                  minimum: state.chartData != null && state.chartData!.isNotEmpty
-                      ? state.chartData!
-                      .map((data) => data.value)
-                      .reduce((a, b) => a < b ? a : b) -
-                      10 // Adjust this offset as needed to add padding below the min value
-                      : null,
-                  labelFormat: '{value}mg',
-                  axisLine: const AxisLine(width: 0),
-                  majorTickLines: const MajorTickLines(color: Colors.transparent),
-                  title: const AxisTitle(text: 'Sales'),
-                ),
-
-                series: <LineSeries<ChartData, num>>[
-                  // Real data series
-                  LineSeries<ChartData, num>(
-                    dataSource: state.chartData!
-                        .where((data) => data.dataType == DataType.real)
-                        .toList(),
-                    xValueMapper: (ChartData sales, _) => sales.monthIndex,
-                    yValueMapper: (ChartData sales, _) => sales.value,
-                    name: 'Actual Sales',
-                    color: Colors.blue,
-                    markerSettings:
-                    const MarkerSettings(isVisible: true),
-                    dataLabelSettings:
-                    const DataLabelSettings(isVisible: true),
-                  ),
-                  // Test data series
-                  LineSeries<ChartData, num>(
-                    dataSource: state.chartData!
-                        .where((data) => data.dataType == DataType.test)
-                        .toList(),
-                    xValueMapper: (ChartData sales, _) => sales.monthIndex,
-                    yValueMapper: (ChartData sales, _) => sales.value,
-                    name: 'Test Data',
-                    color: Colors.green,
-                    markerSettings:
-                    const MarkerSettings(isVisible: true),
-                    dataLabelSettings:
-                    const DataLabelSettings(isVisible: true),
-                  ),
-                  // Test data predictions
-                  LineSeries<ChartData, num>(
-                    dataSource: state.chartData!
-                        .where((data) =>
-                    data.dataType == DataType.test &&
-                        data.predictedValue != null)
-                        .toList(),
-                    xValueMapper: (ChartData sales, _) => sales.monthIndex,
-                    yValueMapper: (ChartData sales, _) =>
-                    sales.predictedValue,
-                    name: 'Test Predictions',
-                    color: Colors.orange,
-                    dashArray: const <double>[5, 5],
-                    markerSettings:
-                    const MarkerSettings(isVisible: true),
-                    dataLabelSettings:
-                    const DataLabelSettings(isVisible: true),
-                  ),
-                  // Forecast data series
-                  LineSeries<ChartData, num>(
-                    dataSource: state.chartData!
-                        .where((data) =>
-                    data.dataType == DataType.forecast)
-                        .toList(),
-                    xValueMapper: (ChartData sales, _) => sales.monthIndex,
-                    yValueMapper: (ChartData sales, _) => sales.value,
-                    name: 'Forecast',
-                    color: Colors.red,
-                    dashArray: const <double>[15, 3, 3, 3],
-                    markerSettings:
-                    const MarkerSettings(isVisible: true),
-                    dataLabelSettings:
-                    const DataLabelSettings(isVisible: true),
-                    emptyPointSettings: const EmptyPointSettings(
-                      mode: EmptyPointMode.zero,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-                tooltipBehavior: TooltipBehavior(
-                  enable: true,
-                  format: 'point.x : point.y mg',
-                ),
-                zoomPanBehavior: ZoomPanBehavior(
-                  enablePanning: true,
-                  enablePinching: true,
-                  enableDoubleTapZooming: true,
-                  enableMouseWheelZooming: true,
-                  enableSelectionZooming: true,
-                  zoomMode: ZoomMode.x,
-                ),
-                crosshairBehavior: CrosshairBehavior(
-                  enable: true,
-                  activationMode: ActivationMode.singleTap,
-                  lineType: CrosshairLineType.vertical,
-                ),
-                onDataLabelTapped: (DataLabelTapDetails args) {
-                  if (state.chartData != null && args.pointIndex < state.chartData!.length) {
-                    model.showDataPointDetails(
-                      Get.context!,
-                      state.chartData![args.pointIndex],
-                    );
-                  }
-                },
-                // // Handle point taps to set regional context
-                // onPointTapped: (PointTapArgs args) {
-                //   if (state.chartData != null && args.pointIndex < state.chartData!.length) {
-                //     final clickedData = state.chartData![args.pointIndex];
-                //     model.onGraphPointClicked(clickedData);
-                //   }
-                // },
-              ),
+          flex: 2,
+          child: DropdownButtonFormField<String>(
+            decoration: const InputDecoration(
+              labelText: 'Country',
+              border: OutlineInputBorder(),
             ),
+            value:
+            state.selectedCountry.isNotEmpty ? state.selectedCountry : null,
+            items: state.availableCountries.map((country) {
+              return DropdownMenuItem(
+                value: country,
+                child: Text(country),
+              );
+            }).toList(),
+            onChanged: model.isGenerating.value
+                ? null
+                : (value) {
+              if (value != null) {
+                model.changeCountry(value);
+              }
+            },
           ),
         ),
       ],
     );
+  }
+
+  Widget _buildChart(AddModel model, AddState state) {
+    // Check if chartData is empty
+    if (state.chartData.isEmpty) {
+      return const Center(child: Text("No chart data available."));
+    }
+
+    // Determine the minimum and maximum dates from chartData
+    DateTime minDate = state.chartData.first.date;
+    DateTime maxDate = state.chartData.last.date;
+
+    return Center(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.grey),
+        ),
+        child: SfCartesianChart(
+          plotAreaBorderWidth: 0,
+          title: ChartTitle(
+            text:
+            '${state.selectedProduct} in ${state.selectedCountry} - Monthly Product Performance',
+            textStyle: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          legend: const Legend(
+            isVisible: true,
+            overflowMode: LegendItemOverflowMode.wrap,
+            position: LegendPosition.bottom,
+          ),
+          primaryXAxis: DateTimeAxis(
+            minimum: minDate,
+            maximum: maxDate,
+            intervalType: DateTimeIntervalType.months,
+            dateFormat: DateFormat('MMM yyyy'),
+            majorGridLines: const MajorGridLines(width: 0),
+            title: const AxisTitle(text: 'Month'),
+          ),
+          primaryYAxis: NumericAxis(
+            minimum: state.chartData.map((data) => data.yhatLower ?? data.value).reduce(min) - 1000,
+            maximum: state.chartData.map((data) => data.yhatUpper ?? data.value).reduce(max) + 1000,
+            labelFormat: '{value}',
+            axisLine: const AxisLine(width: 0),
+            majorTickLines: const MajorTickLines(color: Colors.transparent),
+            title: const AxisTitle(text: 'Sales'),
+          ),
+          series: _buildSeries(state),
+          tooltipBehavior: TooltipBehavior(
+            enable: true,
+            format: 'point.x : point.y mg',
+          ),
+          zoomPanBehavior: ZoomPanBehavior(
+            enablePanning: true,
+            enablePinching: true,
+            enableDoubleTapZooming: true,
+            enableMouseWheelZooming: true,
+            enableSelectionZooming: true,
+            zoomMode: ZoomMode.x,
+          ),
+          crosshairBehavior: CrosshairBehavior(
+            enable: true,
+            activationMode: ActivationMode.singleTap,
+            lineType: CrosshairLineType.vertical,
+          ),
+          onDataLabelTapped: (DataLabelTapDetails args) {
+            if (state.chartData.isNotEmpty && args.pointIndex < state.chartData.length) {
+
+            }
+          },
+          // Handle point taps to set regional context
+
+        ),
+      ),
+    );
+  }
+
+  /// Builds the series for the chart, differentiating data types
+  List<CartesianSeries<dynamic, DateTime>> _buildSeries(AddState state) {
+    return [
+      // RangeAreaSeries for yhat_lower and yhat_upper
+      RangeAreaSeries<dynamic, DateTime>(
+        dataSource: state.chartData,
+        xValueMapper: (dynamic data, _) => data.date,
+        lowValueMapper: (dynamic data, _) => data.yhatLower ?? data.value,
+        highValueMapper: (dynamic data, _) => data.yhatUpper ?? data.value,
+        name: 'Confidence Interval',
+        color: Colors.red.withOpacity(0.3),
+        borderColor: Colors.red,
+        borderWidth: 1,
+      ),
+      // LineSeries for yhat
+      LineSeries<dynamic, DateTime>(
+        dataSource: state.chartData,
+        xValueMapper: (dynamic data, _) => data.date,
+        yValueMapper: (dynamic data, _) => data.value,
+        name: 'Forecast (yhat)',
+        color: Colors.red,
+        markerSettings: const MarkerSettings(isVisible: true),
+        dataLabelSettings: const DataLabelSettings(isVisible: false),
+        width: 2,
+      ),
+    ];
   }
 
   Widget _buildChatUI(AddModel model) {
@@ -435,7 +364,13 @@ class _AddPageState extends State<AddPage> {
                             },
                           ),
                           const SizedBox(height: 4),
-
+                          Text(
+                            '${message.timestamp.hour.toString().padLeft(2, '0')}:${message.timestamp.minute.toString().padLeft(2, '0')}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
                         ],
                       ),
                     ),
