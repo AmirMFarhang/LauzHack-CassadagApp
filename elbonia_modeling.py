@@ -45,7 +45,7 @@ def calculate_cross_validation_metrics(model):
 def create_forecast(model, regressors, start, end, fixed_regressors=None, default_value=0):
     future_dates = pd.date_range(start=start, end=end, freq='MS')
     future_df = pd.DataFrame({'ds': future_dates})
-    
+
     for regressor in regressors:
         if fixed_regressors and regressor in fixed_regressors:
             future_df[regressor] = fixed_regressors[regressor]  # Usa il valore specifico
@@ -63,7 +63,7 @@ def assess_regressor_impact(forecast):
     for index, line in local_regressor_impact.iterrows():
         ds = line["ds"]
         additive_terms = line["additive_terms"]
-        extra_regressors_additive = line["extra_regressors_additive"]  
+        extra_regressors_additive = line["extra_regressors_additive"]
         if  additive_terms > extra_regressors_additive:
             local_regressor_dict[ds] = "trend"
         else:
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     'INNOVIX_Indication 16',
     'INNOVIX_Indication 21',
     'INNOVIX_Indication 22']
-    
+
 
     # Load and prepare data
     df, df_filtered = load_and_prepare_data(FILEPATH, DATE_COLUMN, TARGET_COLUMN, REGRESSORS)
@@ -118,8 +118,8 @@ if __name__ == "__main__":
     'INNOVIX_Indication 14_Email': 10,
     'YREX_Indication 24_Email': 5
     }
-    forecast, forecast_complete = create_forecast(model, REGRESSORS, "2025-12-31", "2027-12-31", 
-    fixed_regressors=fixed_values, 
+    forecast, forecast_complete = create_forecast(model, REGRESSORS, "2025-12-31", "2027-12-31",
+    fixed_regressors=fixed_values,
     default_value=0)
     print(forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']])
 
@@ -127,8 +127,6 @@ if __name__ == "__main__":
     local_impact = assess_regressor_impact(forecast)
     print(local_impact)
 
-   # Maybe also extract the most influential regressor
-
-    # Supponiamo che il tuo modello Prophet sia `m`
-    with open('prophet_model.pkl', 'wb') as f:
+    # Save the model
+    with open('prophet_model_elbonia.pkl', 'wb') as f:
         pickle.dump(model, f)
