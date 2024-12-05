@@ -3,6 +3,7 @@ import numpy as np
 from prophet import Prophet
 import pickle
 
+
 def load_and_prepare_data(filepath, date_col, target_col, regressors):
     df = pd.read_csv(filepath, sep=',')
     df = df.fillna(0)
@@ -41,7 +42,7 @@ def create_forecast_test(model, test_df):
 def create_forecast(model, regressors, start, end, fixed_regressors=None, default_value=0):
     future_dates = pd.date_range(start=start, end=end, freq='MS')
     future_df = pd.DataFrame({'ds': future_dates})
-    
+
     for regressor in regressors:
         if fixed_regressors and regressor in fixed_regressors:
             future_df[regressor] = fixed_regressors[regressor]  # Usa il valore specifico
@@ -72,7 +73,7 @@ def mean_absolute_percentage_error(y_true, y_pred):
 
 
 if __name__ == "__main__":
-    
+
     FILEPATH = 'df_inno_flore1.csv'
     DATE_COLUMN = 'Date'
     TARGET_COLUMN = 'Ex-factory volumes'
@@ -89,7 +90,7 @@ if __name__ == "__main__":
  'INNOVIX_Indication 2_Indication 2-b_New patient share',
  'YREX_Indication 10']
 
-    
+
     train_df, test_df = load_and_prepare_data(FILEPATH, DATE_COLUMN, TARGET_COLUMN, REGRESSORS)
 
     model = create_and_fit_model(train_df, REGRESSORS)
@@ -107,10 +108,10 @@ if __name__ == "__main__":
     'INNOVIX_Indication 10_Email': 10,
     'YREX_Indication 10': 5
 }
-    forecast, forecast_complete = create_forecast(model, REGRESSORS, "2025-12-31", "2027-12-31", 
-    fixed_regressors=fixed_values, 
+    forecast, forecast_complete = create_forecast(model, REGRESSORS, "2025-12-31", "2027-12-31",
+    fixed_regressors=fixed_values,
     default_value=0)
     print(forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']])
 
-    with open('prophet_model.pkl', 'wb') as f:
+    with open('prophet_model_flore.pkl', 'wb') as f:
         pickle.dump(model, f)
