@@ -14,7 +14,7 @@ class AddModel extends BaseGetxController with StateMixin<AddState> {
   final AddState state = AddState();
   final Random _random = Random();
   final messageController = TextEditingController();
-  final OllamaClient llama = OllamaClient();
+  final OllamaClient llama = OllamaClient(apiKey: "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");
 
   // Using RxList for reactive updates
   final RxList<ChatMessage> messages = <ChatMessage>[].obs;
@@ -230,7 +230,7 @@ ${_formatForecastDataForLLM()}
     if (port == null) {
       port = 7070; // Default port
     }
-    final Uri apiUrl = Uri.parse('http://3.94.162.57:$port/forecast');
+    final Uri apiUrl = Uri.parse('http://3.89.141.43:$port/forecast');
 
     try {
       // Set isGenerating to true to disable filters and chat input
@@ -382,7 +382,7 @@ ${_formatForecastDataForLLM()}
     }
 
     // Construct API URL
-    String apiUrl = 'http://3.94.162.57:$port/impactful-parameters/$dateStr';
+    String apiUrl = 'http://3.89.141.43:$port/impactful-parameters/$dateStr';
     print('Fetching impactful parameters from: $apiUrl');
     try {
       // Show loading dialog

@@ -203,9 +203,14 @@ class _AddPageState extends State<AddPage> {
       return const Center(child: Text("No chart data available."));
     }
 
-    // Set the date range to Jan 2025 to Dec 2025
-    DateTime minDate = DateTime(2025, 1, 1);
-    DateTime maxDate = DateTime(2025, 12, 31);
+    // Dynamically calculate the minimum and maximum dates from chartData
+    DateTime minDate = state.chartData
+        .map((data) => data.date)
+        .reduce((a, b) => a.isBefore(b) ? a : b);
+
+    DateTime maxDate = state.chartData
+        .map((data) => data.date)
+        .reduce((a, b) => a.isAfter(b) ? a : b);
 
     return Center(
       child: Container(
@@ -293,7 +298,8 @@ class _AddPageState extends State<AddPage> {
                     const SizedBox(width: 10),
                     ElevatedButton(
                       onPressed: () {
-                        model.explain(data.date.month, data.date.year, data.value);
+                        model.explain(
+                            data.date.month, data.date.year, data.value);
                         // The explanation dialog is handled within the explain method
                       },
                       child: const Text('Explain'),
@@ -316,12 +322,6 @@ class _AddPageState extends State<AddPage> {
             activationMode: ActivationMode.singleTap,
             lineType: CrosshairLineType.vertical,
           ),
-          // onPointTapped: (PointTapArgs args) {
-          //   if (state.chartData.isNotEmpty && args.pointIndex < state.chartData.length) {
-          //     final clickedData = state.chartData[args.pointIndex];
-          //     model.onGraphPointClicked(clickedData);
-          //   }
-          // },
         ),
       ),
     );

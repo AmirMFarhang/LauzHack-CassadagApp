@@ -1,77 +1,91 @@
 // lib/data/OllamaClient.dart
 
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class OllamaClient {
   final String baseUrl;
+  final String apiKey;
 
-  OllamaClient({this.baseUrl = 'http://localhost:11434'}); // Update if your server runs on a different host or port
+  OllamaClient({
+    this.baseUrl = 'https://api.groq.com', // Groq API base URL
+    required this.apiKey, // Groq API Key
+  });
 
-  /// Sends a message to the Ollama server with contextual information and returns a stream of response fragments.
+  /// Sends a message to the Groq server with contextual information and returns a stream of response fragments.
   Stream<String> sendMessage(
       String userMessage, {
-        String model = 'llama3.2:3b',
-        int maxTokens = 150,
+        String model = 'llama3-8b-8192',
+        int maxTokens = 560,
         String appContext = '',
         String graphData = '',
       }) async* {
-    final url = Uri.parse('$baseUrl/api/generate');
+    final url = Uri.parse('https://api.groq.com/openai/v1/chat/completions');
 
-    // Construct the full prompt with app context and graph data
-    final prompt = '''
-You are an AI assistant for a biochemical compounds forecasting platform. The platform analyzes historical data, including sales and side effects, to forecast market trends and assess product performance. It can provide insights based on regional data (when a user clicks on a specific point in the graph) or general data for overall analysis.
+    // Construct the messages array with system and user messages
+    final List<Map<String, String>> messages = [];
 
-App Context:
-$appContext
-
-Graph Data:
-$graphData
-
-User Message:
-$userMessage
-
-Respond accordingly.
-''';
-
-    final request = http.Request('POST', url)
-      ..headers['Content-Type'] = 'application/json'
-      ..body = jsonEncode({
-        'model': model,
-        'prompt': prompt,
-        'max_tokens': maxTokens,
+    if (appContext.isNotEmpty) {
+      messages.add({
+        'role': 'system',
+        'content': 'App Context:\n$appContext',
       });
+    }
 
-    final response = await request.send();
+    if (graphData.isNotEmpty) {
+      messages.add({
+        'role': 'system',
+        'content': 'Graph Data:\n$graphData',
+      });
+    }
 
-    if (response.statusCode == 200) {
-      // Decode the response stream
-      final stream = response.stream.transform(utf8.decoder);
-      String buffer = '';
+    messages.add({
+      'role': 'user',
+      'content': userMessage,
+    });
 
-      await for (var chunk in stream) {
-        // Each chunk may contain multiple JSON objects separated by newlines
-        final lines = chunk.split('\n').where((line) => line.trim().isNotEmpty);
-        for (var line in lines) {
-          try {
-            final data = jsonDecode(line);
-            if (data['response'] != null && data['response'].isNotEmpty) {
-              buffer += data['response'];
+    final requestBody = {
+      'model': model,
+      'messages': messages,
+      'max_tokens': maxTokens,
+      // Add any additional fields required by the Groq API
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $apiKey',
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+
+        // Assuming Groq API's response structure is similar to OpenAI's
+        // with 'choices' being a list of possible completions
+        if (data.containsKey('choices') && data['choices'] is List) {
+          for (var choice in data['choices']) {
+            if (choice.containsKey('message') &&
+                choice['message'].containsKey('content')) {
+              yield choice['message']['content'];
             }
-          } catch (e) {
-            // Handle JSON parsing errors
-            print('Error parsing JSON: $e');
           }
+        } else if (data.containsKey('response')) {
+          // Fallback if Groq API returns a single 'response' field
+          yield data['response'];
+        } else {
+          throw Exception('Unexpected response format from Groq API.');
         }
+      } else {
+        final error = response.body;
+        throw Exception('Failed to communicate with Groq API: $error');
       }
-
-      // Yield the accumulated response as a single message
-      if (buffer.isNotEmpty) {
-        yield buffer;
-      }
-    } else {
-      final error = await response.stream.bytesToString();
-      throw Exception('Failed to communicate with Ollama: $error');
+    } catch (e) {
+      throw Exception('Error communicating with Groq API: $e');
     }
   }
 }

@@ -152,6 +152,18 @@
       "languageVersion": "2.18"
     },
     {
+      "name": "connectivity_plus",
+      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/connectivity_plus-6.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "connectivity_plus_platform_interface",
+      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/connectivity_plus_platform_interface-2.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
       "name": "convert",
       "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/convert-3.1.1",
       "packageUri": "lib/",
@@ -186,6 +198,12 @@
       "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/dart_style-2.3.6",
       "packageUri": "lib/",
       "languageVersion": "3.0"
+    },
+    {
+      "name": "dbus",
+      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/dbus-0.7.10",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
     },
     {
       "name": "dio",
@@ -294,6 +312,12 @@
       "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_displaymode-0.6.0",
       "packageUri": "lib/",
       "languageVersion": "2.12"
+    },
+    {
+      "name": "flutter_hooks",
+      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_hooks-0.20.5",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
     },
     {
       "name": "flutter_html",
@@ -422,10 +446,70 @@
       "languageVersion": "2.14"
     },
     {
+      "name": "gql",
+      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/gql-1.0.1-alpha+1730759315362",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "gql_dedupe_link",
+      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/gql_dedupe_link-2.0.4-alpha+1715521079596",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "gql_error_link",
+      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/gql_error_link-1.0.0+1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "gql_exec",
+      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/gql_exec-1.1.1-alpha+1699813812660",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "gql_http_link",
+      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/gql_http_link-1.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "gql_link",
+      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/gql_link-1.0.1-alpha+1730759315378",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "gql_transform_link",
+      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/gql_transform_link-1.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "graphql",
+      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/graphql-5.2.0-beta.9",
+      "packageUri": "lib/",
+      "languageVersion": "2.15"
+    },
+    {
+      "name": "graphql_flutter",
+      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/graphql_flutter-5.2.0-beta.7",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "graphs",
       "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/graphs-2.3.2",
       "packageUri": "lib/",
       "languageVersion": "3.4"
+    },
+    {
+      "name": "groq",
+      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/groq-0.0.7",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
     },
     {
       "name": "grouped_list",
@@ -580,6 +664,18 @@
     {
       "name": "nested",
       "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/nested-1.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "nm",
+      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/nm-0.5.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "normalize",
+      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/normalize-0.8.2+1",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
@@ -1100,16 +1196,10 @@
       "languageVersion": "3.4"
     },
     {
-      "name": "web_socket",
-      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/web_socket-0.1.6",
-      "packageUri": "lib/",
-      "languageVersion": "3.3"
-    },
-    {
       "name": "web_socket_channel",
-      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/web_socket_channel-3.0.1",
+      "rootUri": "file:///C:/Users/Amir/AppData/Local/Pub/Cache/hosted/pub.dev/web_socket_channel-2.4.0",
       "packageUri": "lib/",
-      "languageVersion": "3.3"
+      "languageVersion": "2.15"
     },
     {
       "name": "win32",
@@ -1142,7 +1232,7 @@
       "languageVersion": "3.3"
     }
   ],
-  "generated": "2024-12-01T01:21:10.981642Z",
+  "generated": "2024-12-05T17:31:59.478305Z",
   "generator": "pub",
   "generatorVersion": "3.5.4",
   "flutterRoot": "file:///D:/Applications/flutter-sdk/flutter",
